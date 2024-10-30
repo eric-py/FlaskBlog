@@ -4,4 +4,4 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def home():
-    return 'Welcome to the Flask App!'
+    return render_template('blog/index.html')
