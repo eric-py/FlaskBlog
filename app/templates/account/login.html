@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center text-white">L O G I N</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('main.login') }}" method="post" novalidate>
+                        {{ form.hidden_tag() }}
+                        <div class="form-group">
+                            
+                            {{ form.username(class="form-control", placeholder="username...") }}
+                            {% for error in form.username.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        <div class="form-group mt-3">
+                           
+                            {{ form.password(class="form-control", placeholder="Password...") }}
+                            {% for error in form.password.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        <div class="form-check mt-3">
+                            {{ form.remember_me(class="form-check-input") }}
+                            {{ form.remember_me.label(class="form-check-label") }}
+                        </div>
+                        <div class="d-grid gap-2 mt-4">
+                            {{ form.submit(class="btn btn-primary btn-block") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">Don't have an account? <a href="{{ url_for('main.register') }}">signup</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
