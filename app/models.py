@@ -2,11 +2,12 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from slugify import slugify
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
 # Models
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -31,6 +32,9 @@ class User(db.Model):
             print('Admin user created successfully.')
         else:
             print('Admin user already exists.')
+
+    def __repr__(self):
+        return f'<User {self.username}>'
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
