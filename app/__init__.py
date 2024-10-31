@@ -1,7 +1,7 @@
 from flask import Flask, session
 from .config import Config
 from .views import main
-from .models import db
+from .models import db, User
 from .error_handlers import error_handlers
 import os
 
@@ -10,6 +10,10 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+
+    with app.app_context():
+       db.create_all()
+       User.create_admin()
 
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs(app.config['TEMPLATES_FOLDER'], exist_ok=True)
