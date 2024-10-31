@@ -1,15 +1,19 @@
 from flask import Flask, session
 from .config import Config
-from .views import main
 from .models import db, User
 from .error_handlers import error_handlers
+from flask_login import LoginManager
+from .views import main
 import os
+
+login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
     db.init_app(app)
+    login_manager.init_app(app)
 
     with app.app_context():
        db.create_all()
@@ -26,7 +30,8 @@ def create_app():
     def make_session_permanent():
         session.permanent = True
 
-    with app.app_context():
-        db.create_all()
-    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
     return app
