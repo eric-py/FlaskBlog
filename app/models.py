@@ -1,8 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from slugify import slugify
 from flask_login import UserMixin
+from flask import current_app
+from itsdangerous import URLSafeTimedSerializer as Serializer
 
 db = SQLAlchemy()
 
@@ -14,6 +16,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expiration = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -32,6 +36,26 @@ class User(UserMixin, db.Model):
             print('Admin user created successfully.')
         else:
             print('Admin user already exists.')
+    
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        token = s.dumps({'user_id': self.id})
+        self.reset_token = token
+        self.reset_token_expiration = datetime.utcnow() + timedelta(seconds=expires_sec)
+        db.session.commit()
+        return token
+
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        user = User.query.get(user_id)
+        if user and user.reset_token == token and user.reset_token_expiration > datetime.utcnow():
+            return user
+        return None
 
     def __repr__(self):
         return f'<User {self.username}>'
