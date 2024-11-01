@@ -31,12 +31,12 @@
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Account
               </a>
-              <div class="dropdown-menu"> <a class="dropdown-item" href="{{ url_for('main.logout') }}">Profile</a>
-                <a class="dropdown-item" href="{{ url_for('main.logout') }}">Logout</a>
+              <div class="dropdown-menu"> <a class="dropdown-item" href="{{ url_for('account.logout') }}">Profile</a>
+                <a class="dropdown-item" href="{{ url_for('account.logout') }}">Logout</a>
               </div>
             </li>
           {% else %}
-            <li class="nav-item"> <a class="nav-link" href="{{ url_for('main.login') }}">Login</a></li>
+            <li class="nav-item"> <a class="nav-link" href="{{ url_for('account.login') }}">Login</a></li>
           {% endif %}
           </li>
         </ul>

@@ -10,7 +10,9 @@ main = Blueprint('main', __name__)
 def home():
     return render_template('blog/index.html')
 
-@main.route('/login', methods=['GET', 'POST'])
+account = Blueprint('account', __name__)
+
+@account.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
@@ -26,13 +28,13 @@ def login():
             flash('Login failed. Please check your username and password.', 'danger')
     return render_template('account/login.html', title='login', form=form)
 
-@main.route('/logout')
+@account.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('main.home'))
 
-@main.route('/register', methods=['GET', 'POST'])
+@account.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
@@ -43,7 +45,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to log in', 'success')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('account.login'))
     return render_template('account/register.html', title='Register', form=form)
 
 def send_reset_email(user):
@@ -53,14 +55,14 @@ def send_reset_email(user):
                   sender='sample@demo.com',
                   recipients=[user.email])
     msg.body = f'''To reset your password, visit the following link:
-    {url_for('main.reset_token', token=token, _external=True)}
+    {url_for('account.reset_token', token=token, _external=True)}
 
     If you did not make this request then simply ignore this email and no changes will be made.
     '''
     
     mail.send(msg)
 
-@main.route("/reset_password", methods=['GET', 'POST'])
+@account.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
@@ -71,17 +73,17 @@ def reset_request():
             token = user.get_reset_token()
             send_reset_email(user)
         flash('An email has been sent with instructions to reset your password.', 'info')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('account.login'))
     return render_template('account/reset_request.html', title='Reset Password', form=form)
 
-@main.route("/reset_password/<token>", methods=['GET', 'POST'])
+@account.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_token(token):
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
     user = User.verify_reset_token(token)
     if user is None:
         flash('That is an invalid or expired token', 'warning')
-        return redirect(url_for('main.reset_request'))
+        return redirect(url_for('account.reset_request'))
     form = ResetPasswordForm()
     if form.validate_on_submit():
         user.set_password(form.password.data)
@@ -89,5 +91,5 @@ def reset_token(token):
         user.reset_token_expiration = None
         db.session.commit()
         flash('Your password has been updated! You are now able to log in', 'success')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('account.login'))
     return render_template('account/reset_token.html', title='Reset Password', form=form)

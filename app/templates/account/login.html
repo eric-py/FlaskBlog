@@ -13,7 +13,7 @@
                     <h3 class="mb-0 text-center text-white">L O G I N</h3>
                 </div>
                 <div class="card-body">
-                    <form action="{{ url_for('main.login') }}" method="post" novalidate>
+                    <form action="{{ url_for('account.login') }}" method="post" novalidate>
                         {{ form.hidden_tag() }}
                         <div class="form-group">
                             
@@ -39,8 +39,8 @@
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <p class="mb-0">Don't have an account? <a href="{{ url_for('main.register') }}">signup</a></p>
-                    <p class="mb-0"><a href="{{ url_for('main.reset_request') }}">Forget Password!</a></p>
+                    <p class="mb-0">Don't have an account? <a href="{{ url_for('account.register') }}">signup</a></p>
+                    <p class="mb-0"><a href="{{ url_for('account.reset_request') }}">Forget Password!</a></p>
                 </div>
             </div>
         </div>

@@ -3,7 +3,7 @@ from .config import Config
 from .models import db, User
 from .error_handlers import error_handlers
 from flask_login import LoginManager
-from .views import main
+from .views import main, account
 import os
 from flask_mail import Mail
 
@@ -36,6 +36,7 @@ def create_app():
     mail.init_app(app)
 
     app.register_blueprint(main, url_prefix = '/')
+    app.register_blueprint(account, url_prefix = '/account/')
     app.register_blueprint(error_handlers, url_prefix= '/errors/')
 
     @app.before_request
