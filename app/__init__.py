@@ -20,14 +20,6 @@ def create_app():
     with app.app_context():
        db.create_all()
        User.create_admin()
-
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-    
-    app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
     
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs(app.config['TEMPLATES_FOLDER'], exist_ok=True)
