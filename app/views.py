@@ -1,14 +1,22 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request
+from flask import Blueprint, render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
-from .forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm
-from .models import User, db
+from .forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, PostForm
+from .models import User, db, Post, Category
 from flask_mail import Message
+from .utils import save_picture
+from flask import send_from_directory
+from flask import current_app
+import os
 
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def home():
     return render_template('blog/index.html')
+
+@main.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
 account = Blueprint('account', __name__)
 
@@ -93,3 +101,84 @@ def reset_token(token):
         flash('Your password has been updated! You are now able to log in', 'success')
         return redirect(url_for('account.login'))
     return render_template('account/reset_token.html', title='Reset Password', form=form)
+
+profile = Blueprint('profile', __name__)
+
+@profile.route('')
+@login_required
+def profile_index():
+    posts = Post.query.filter_by(author=current_user).all()
+    return render_template('profile/index.html', posts=posts)
+
+@profile.route('/new', methods=['GET', 'POST'])
+@login_required
+def new_article():
+    form = PostForm()
+    
+    if form.validate_on_submit():
+        post = Post(title=form.title.data,
+                    content=form.content.data,
+                    status=form.status.data,
+                    author=current_user)
+        
+        selected_categories = Category.query.filter(Category.id.in_(form.categories.data)).all()
+        post.categories = selected_categories
+        
+        if form.image.data:
+            image_file = save_picture(form.image.data)
+            post.image_filename = image_file
+        
+        db.session.add(post)
+        db.session.commit()
+        flash('Your article has been created!', 'success')
+        return redirect(url_for('profile.profile_index'))
+    
+    return render_template('profile/new_article.html', title='New Article', form=form)
+
+@profile.route('/edit/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def edit_article(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        post.status = form.status.data
+        
+        selected_categories = Category.query.filter(Category.id.in_(form.categories.data)).all()
+        post.categories = selected_categories
+        
+        if form.image.data:
+            image_file = save_picture(form.image.data)
+            if post.image_filename:
+                old_image_path = os.path.join(current_app.root_path, current_app.config['UPLOAD_FOLDER'], post.image_filename)
+                if os.path.exists(old_image_path):
+                    os.remove(old_image_path)
+            post.image_filename = image_file
+        
+        db.session.commit()
+        flash('Your article has been updated!', 'success')
+        return redirect(url_for('profile.profile_index'))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+        form.status.data = post.status
+        form.categories.data = [category.id for category in post.categories]
+    
+    return render_template('profile/new_article.html', title='Edit Article', form=form, post=post)
+
+@profile.route("/delete_article/<int:post_id>")
+@login_required
+def delete_article(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        flash('You do not have permission to delete this post.', 'danger')
+        return redirect(url_for('main.home'))
+    
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('profile.profile_index'))
