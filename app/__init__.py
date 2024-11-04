@@ -3,12 +3,15 @@ from .config import Config
 from .models import db, User
 from .error_handlers import error_handlers
 from flask_login import LoginManager
-from .views import main, account
+from .views import main, account, profile
 import os
 from flask_mail import Mail
+from flask_ckeditor import CKEditor
+
 
 login_manager = LoginManager()
 mail = Mail()
+ckeditor = CKEditor()
 
 def create_app():
     app = Flask(__name__)
@@ -26,9 +29,11 @@ def create_app():
     os.makedirs(app.config['STATIC_FOLDER'], exist_ok=True)
 
     mail.init_app(app)
+    ckeditor.init_app(app)
 
     app.register_blueprint(main, url_prefix = '/')
     app.register_blueprint(account, url_prefix = '/account/')
+    app.register_blueprint(profile, url_prefix = '/profile/')
     app.register_blueprint(error_handlers, url_prefix= '/errors/')
 
     @app.before_request
