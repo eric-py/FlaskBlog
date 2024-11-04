@@ -8,7 +8,6 @@ import os
 from flask_mail import Mail
 from flask_ckeditor import CKEditor
 
-
 login_manager = LoginManager()
 mail = Mail()
 ckeditor = CKEditor()
