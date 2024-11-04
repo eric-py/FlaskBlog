@@ -60,11 +60,16 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
+post_categories = db.Table('post_categories',
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
+    db.Column('category_id', db.Integer, db.ForeignKey('category.id'), primary_key=True)
+)
+
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     slug = db.Column(db.String(50), unique=True, nullable=False)
-    posts = db.relationship('Post', backref='category', lazy='dynamic')
+    posts = db.relationship('Post', secondary=post_categories, back_populates='categories')
 
     def __init__(self, *args, **kwargs):
         if 'slug' not in kwargs:
@@ -82,7 +87,8 @@ class Post(db.Model):
     image_filename = db.Column(db.String(255))
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    categories = db.relationship('Category', secondary=post_categories, back_populates='posts')
+    status = db.Column(db.String(1), default='d', nullable=False)
 
     def __init__(self, *args, **kwargs):
         if 'slug' not in kwargs:
@@ -91,3 +97,7 @@ class Post(db.Model):
 
     def __repr__(self):
         return f'<Post {self.title}>'
+
+    @property
+    def category(self):
+        return ', '.join([cat.name for cat in self.categories])
