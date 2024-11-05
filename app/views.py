@@ -8,7 +8,17 @@ from flask import send_from_directory
 from flask import current_app
 import os
 from sqlalchemy.exc import IntegrityError
+from functools import wraps
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash('You do not have access to this page.', 'danger')
+            return redirect(url_for('main.home'))
+        return f(*args, **kwargs)
+    return decorated_function
+    
 main = Blueprint('main', __name__)
 
 @main.route('/')
@@ -186,10 +196,8 @@ def delete_article(post_id):
 
 @profile.route("/new_category", methods=['GET', 'POST'])
 @login_required
+@admin_required
 def new_category():
-    if not current_user.is_admin:
-        abort(403)
-    
     form = CategoryForm()
     if form.validate_on_submit():
         category = Category(name=form.name.data)
@@ -203,10 +211,8 @@ def new_category():
 
 @profile.route("/edit_category/<int:category_id>", methods=['GET', 'POST'])
 @login_required
+@admin_required
 def edit_category(category_id):
-    if not current_user.is_admin:
-        abort(403)
-
     category = Category.query.get_or_404(category_id)
     form = CategoryForm()
     if form.validate_on_submit():
@@ -220,10 +226,8 @@ def edit_category(category_id):
 
 @profile.route("/delete_category/<int:category_id>", methods=['GET'])
 @login_required
+@admin_required
 def delete_category(category_id):
-    if not current_user.is_admin:
-        abort(403)
-
     category = Category.query.get_or_404(category_id)
     db.session.delete(category)
     db.session.commit()
