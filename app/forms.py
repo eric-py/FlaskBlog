@@ -1,9 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, SelectMultipleField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, SelectMultipleField, PasswordField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flask_wtf.file import FileAllowed, FileField
 from .models import User, Category
 from flask_ckeditor import CKEditorField
+from flask_login import current_user
 
 
 # Forms
@@ -64,3 +65,19 @@ class CategoryForm(FlaskForm):
         category = Category.query.filter_by(name=name.data).first()
         if category:
             raise ValidationError('That category name is already taken. Please choose a different one.')
+
+class UpdateAccountForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Update')
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    new_password = PasswordField('New Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password')])
+    submit = SubmitField('Change Password')
+
+    def validate_current_password(self, current_password):
+        if not current_user.check_password(current_password.data):
+            raise ValidationError('Incorrect current password.')
+        

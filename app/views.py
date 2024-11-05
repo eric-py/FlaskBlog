@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
-from .forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, PostForm, CategoryForm
+from .forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, PostForm, CategoryForm, UpdateAccountForm, ChangePasswordForm, ResetPasswordForm
 from .models import User, db, Post, Category
 from flask_mail import Message
 from .utils import save_picture
 from flask import send_from_directory
 from flask import current_app
 import os
+from sqlalchemy.exc import IntegrityError
 
 main = Blueprint('main', __name__)
 
@@ -228,3 +229,50 @@ def delete_category(category_id):
     db.session.commit()
     flash('The category has been deleted!', 'success')
     return redirect(url_for('profile.new_category'))
+
+@profile.route("/account", methods=['GET', 'POST'])
+@login_required
+def profile_account():
+    info_form = UpdateAccountForm()
+    password_form = ChangePasswordForm()
+    return render_template('profile/account.html', form=info_form, password_form=password_form)
+
+@profile.route("/update_info", methods=['POST'])
+@login_required
+def update_info():
+    form = UpdateAccountForm()
+    if form.validate_on_submit():
+        try:
+            current_user.username = form.username.data
+            current_user.email = form.email.data
+            db.session.commit()
+            flash('Your account information has been updated!', 'success')
+        except IntegrityError:
+            db.session.rollback()
+            if User.query.filter(User.username == form.username.data, User.id != current_user.id).first():
+                flash('Username already exists', 'danger')
+            elif User.query.filter(User.email == form.email.data, User.id != current_user.id).first():
+                flash('Email already exists', 'danger')
+            else:
+                flash('An error occurred. Please try again.', 'danger')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{field.capitalize()}: {error}', 'danger')
+
+    return redirect(url_for('profile.profile_account'))
+
+@profile.route("/change_password", methods=['POST'])
+@login_required
+def change_password():
+    info_form = UpdateAccountForm()
+    password_form = ChangePasswordForm()
+    if password_form.validate_on_submit():
+        if current_user.check_password(password_form.current_password.data):
+            current_user.set_password(password_form.new_password.data)
+            db.session.commit()
+            flash('Your password has been updated!', 'success')
+            return redirect(url_for('profile.profile_account'))
+        else:
+            flash('Invalid current password', 'danger')
+    return render_template('profile/account.html', form= info_form,password_form=password_form)
