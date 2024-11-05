@@ -1,0 +1,67 @@
+{% extends 'profile_base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>{{ title }}</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="p-4">
+                        <form method="POST">
+                            {{ form.csrf_token }}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.username.label(class="form-control-label") }}
+                                        {{ form.username(class="form-control") }}
+                                        {% for error in form.username.errors %}
+                                            <span class="text-danger text-xs">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.email.label(class="form-control-label") }}
+                                        {{ form.email(class="form-control", placeholder="Leave blank to keep current email") }}
+                                        {% for error in form.email.errors %}
+                                            <span class="text-danger text-xs">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.password.label(class="form-control-label") }}
+                                        {{ form.password(class="form-control", placeholder="Leave blank to keep current password") }}
+                                        {% for error in form.password.errors %}
+                                            <span class="text-danger text-xs">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.confirm_password.label(class="form-control-label") }}
+                                        {{ form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                                        {% for error in form.confirm_password.errors %}
+                                            <span class="text-danger text-xs">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    {{ form.submit(class="btn btn-primary mt-3") }}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

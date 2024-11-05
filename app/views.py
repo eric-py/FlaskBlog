@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
-from .forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, PostForm, CategoryForm, UpdateAccountForm, ChangePasswordForm, ResetPasswordForm
+from .forms import (LoginForm, RegistrationForm, RequestResetForm, 
+                    ResetPasswordForm, PostForm, CategoryForm, UpdateAccountForm, 
+                    ChangePasswordForm, ResetPasswordForm, UserForm, EditUserForm)
 from .models import User, db, Post, Category
 from flask_mail import Message
 from .utils import save_picture
@@ -9,6 +11,9 @@ from flask import current_app
 import os
 from sqlalchemy.exc import IntegrityError
 from functools import wraps
+from sqlalchemy.orm import subqueryload
+from sqlalchemy.exc import IntegrityError
+
 
 def admin_required(f):
     @wraps(f)
@@ -280,3 +285,71 @@ def change_password():
         else:
             flash('Invalid current password', 'danger')
     return render_template('profile/account.html', form= info_form,password_form=password_form)
+
+@profile.route('/users', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def user_list():
+    page = request.args.get('page', 1, type=int)
+    users = User.query.paginate(page=page, per_page=5, error_out=False)
+    return render_template('profile/user_list.html', users=users)
+
+@profile.route('/user/add', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_user():
+    form = UserForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('New user has been added successfully.', 'success')
+        return redirect(url_for('profile.user_list'))
+    return render_template('profile/user_form.html', form=form, title='Add New User')
+
+@profile.route('/user/edit/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    form = EditUserForm(obj=user)
+    if form.validate_on_submit():
+        user.username = form.username.data
+        if form.email.data:
+            user.email = form.email.data
+        if form.password.data:
+            user.set_password(form.password.data)
+        db.session.commit()
+        flash('User has been updated!', 'success')
+        return redirect(url_for('profile.user_list'))
+    return render_template('profile/user_form.html', title='Edit User', form=form)
+
+
+@profile.route('/user/delete/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user == current_user:
+        flash('You cannot delete your own account.', 'danger')
+        return redirect(url_for('profile.user_list'))
+    
+    # Fetch posts separately
+    posts = Post.query.filter_by(author_id=user.id).all()
+    
+    # Delete posts
+    for post in posts:
+        db.session.delete(post)
+    
+    # Delete user
+    db.session.delete(user)
+    
+    try:
+        db.session.commit()
+        flash('User and associated posts have been deleted.', 'success')
+    except IntegrityError:
+        db.session.rollback()
+        flash('There was an error deleting the user.', 'danger')
+    
+    return redirect(url_for('profile.user_list'))

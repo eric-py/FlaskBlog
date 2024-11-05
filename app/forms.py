@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, SelectMultipleField, PasswordField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Optional
 from flask_wtf.file import FileAllowed, FileField
 from .models import User, Category
 from flask_ckeditor import CKEditorField
@@ -80,4 +80,27 @@ class ChangePasswordForm(FlaskForm):
     def validate_current_password(self, current_password):
         if not current_user.check_password(current_password.data):
             raise ValidationError('Incorrect current password.')
-        
+
+class UserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Create')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('This username is already taken. Please choose a different one.')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('This email is already registered. Please use a different email.')
+
+class EditUserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[Optional(), Email()])
+    password = PasswordField('Password', validators=[Optional(), Length(min=6)])
+    confirm_password = PasswordField('Confirm Password', validators=[EqualTo('password')])
+    submit = SubmitField('Update')
