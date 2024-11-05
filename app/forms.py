@@ -55,3 +55,12 @@ class PostForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(PostForm, self).__init__(*args, **kwargs)
         self.categories.choices = [(c.id, c.name) for c in Category.query.order_by('name')]
+
+class CategoryForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(), Length(min=2, max=50)])
+    submit = SubmitField('Create Category')
+
+    def validate_name(self, name):
+        category = Category.query.filter_by(name=name.data).first()
+        if category:
+            raise ValidationError('That category name is already taken. Please choose a different one.')

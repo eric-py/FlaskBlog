@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
-from .forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, PostForm
+from .forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, PostForm, CategoryForm
 from .models import User, db, Post, Category
 from flask_mail import Message
 from .utils import save_picture
@@ -182,3 +182,49 @@ def delete_article(post_id):
     db.session.commit()
     flash('Your post has been deleted!', 'success')
     return redirect(url_for('profile.profile_index'))
+
+@profile.route("/new_category", methods=['GET', 'POST'])
+@login_required
+def new_category():
+    if not current_user.is_admin:
+        abort(403)
+    
+    form = CategoryForm()
+    if form.validate_on_submit():
+        category = Category(name=form.name.data)
+        db.session.add(category)
+        db.session.commit()
+        flash('New category has been created!', 'success')
+        return redirect(url_for('profile.new_category'))
+    
+    categories = Category.query.order_by(Category.id.desc()).all()
+    return render_template('profile/new_category.html', title='New Category', form=form, categories=categories)
+
+@profile.route("/edit_category/<int:category_id>", methods=['GET', 'POST'])
+@login_required
+def edit_category(category_id):
+    if not current_user.is_admin:
+        abort(403)
+
+    category = Category.query.get_or_404(category_id)
+    form = CategoryForm()
+    if form.validate_on_submit():
+        category.name = form.name.data
+        db.session.commit()
+        flash('The category has been updated!', 'success')
+        return redirect(url_for('profile.new_category'))
+    elif request.method == 'GET':
+        form.name.data = category.name
+    return render_template('profile/edit_category.html', title='Edit Category', form=form, category=category)
+
+@profile.route("/delete_category/<int:category_id>", methods=['GET'])
+@login_required
+def delete_category(category_id):
+    if not current_user.is_admin:
+        abort(403)
+
+    category = Category.query.get_or_404(category_id)
+    db.session.delete(category)
+    db.session.commit()
+    flash('The category has been deleted!', 'success')
+    return redirect(url_for('profile.new_category'))

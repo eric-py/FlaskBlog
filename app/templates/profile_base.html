@@ -49,6 +49,12 @@
                 <i class="fa-solid fa-pen-to-square"></i>
                 <span class="nav-link-text ms-1">New Article</span>
           </a>
+          {% if current_user.is_admin %}
+            <a class="nav-link  " href="{{url_for('profile.new_category')}}">
+                  <i class="fa-solid fa-list"></i>
+                  <span class="nav-link-text ms-1">New Category</span>
+            </a>
+          {% endif %}
         </li>
       </ul>
     </div>

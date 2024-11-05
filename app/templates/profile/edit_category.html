@@ -1,0 +1,33 @@
+{% extends "profile_base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Edit Category</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="p-4">
+                        <form method="POST" action="{{ url_for('profile.edit_category', category_id=category.id) }}">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group">
+                                {{ form.name.label(class="form-control-label") }}
+                                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter category name") }}
+                                {% for error in form.name.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {{ form.submit(class="btn btn-outline-primary", value="Update Category") }}                                <a href="{{ url_for('profile.new_category') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <div class="form-group mt-3">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
