@@ -7,6 +7,7 @@ from .views import main, account, profile
 import os
 from flask_mail import Mail
 from flask_ckeditor import CKEditor
+from .middlewares import init_view_counter
 
 login_manager = LoginManager()
 mail = Mail()
@@ -34,6 +35,8 @@ def create_app():
     app.register_blueprint(account, url_prefix = '/account/')
     app.register_blueprint(profile, url_prefix = '/profile/')
     app.register_blueprint(error_handlers, url_prefix= '/errors/')
+
+    init_view_counter(app)
 
     @app.before_request
     def make_session_permanent():
