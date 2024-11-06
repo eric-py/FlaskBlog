@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{post.title}}
+{% endblock %}
+
+{% block content %}
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 ">
+            <div class="breadcrumbs mb-4"> <a href="/">Home</a>
+              <span class="mx-1">/</span>  <a href="about.html">{{ post.author.username }}</a>
+              <span class="mx-1">/</span>  <a href="about.html">Article</a>
+            </div>
+          </div>
+          <div class="col-lg-8 mx-auto mb-5 mb-lg-0">
+            <img loading="lazy" decoding="async" src="{{ url_for('main.uploaded_file', filename=post.image_filename) }}" class="img-fluid w-100 mb-4" alt="Author Image">
+            <h1 class="mb-4">{{ post.title }}</h1>
+            <div class="content">
+              {{ post.content | safe }}
+            </div>
+          </div>
+          <div class="col-lg-4">
+            {% set sidebar_data = {'categories': categories, 'popular': popular, 'random_posts':random_posts} %}
+                    {% include 'includes/sidebar.html' %}
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+{% endblock %}
