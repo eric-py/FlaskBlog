@@ -89,6 +89,7 @@ class Post(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     categories = db.relationship('Category', secondary=post_categories, back_populates='posts')
     status = db.Column(db.String(1), default='d', nullable=False)
+    views = db.Column(db.Integer, default=0)
 
     def __init__(self, *args, **kwargs):
         if 'slug' not in kwargs:
