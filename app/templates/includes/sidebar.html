@@ -1,0 +1,68 @@
+<div class="col-lg-12">
+    <div class="widget">
+      <div class="widget-body">
+          <img loading="lazy" decoding="async" src="{{ url_for('main.uploaded_file', filename=popular.image_filename) }}" alt="Popular" class="w-100 author-thumb-sm d-block">
+          <h2 class="widget-title my-3">{{ popular.title | truncate(30) }}</h2>
+          <p class="mb-3 pb-2">{{ popular.content | truncate(100) | safe }}</p> <a href="{{ url_for('main.article', slug=popular.slug) }}" class="btn btn-sm btn-outline-primary">Read...</a>
+      </div>
+      </div>
+  </div>
+  <div class="col-lg-12 col-md-6">
+      <div class="widget">
+      <h2 class="section-title mb-3">Random</h2>
+      <div class="widget-body">
+          <div class="widget-list">
+              {% for post in random_posts %}
+                  {% if loop.first %}
+                      <article class="card mb-4">
+                          <div class="card-image">
+                              <div class="post-info">
+                                  <span class="text-uppercase">{{ post.views }} views</span>
+                              </div>
+                              <img loading="lazy" decoding="async" src="{{ url_for('main.uploaded_file', filename=post.image_filename) }}" alt="Post Thumbnail" class="w-100">
+                          </div>
+                          <div class="card-body px-0 pb-1">
+                              <h3><a class="post-title post-title-sm" href="{{ url_for('main.article', slug=post.slug) }}">{{ post.title }}</a></h3>
+                              <p class="card-text">{{ post.content | truncate(100) | safe }}</p>
+                              <div class="content">
+                                  <a class="read-more-btn" href="{{ url_for('main.article', slug=post.slug) }}">Read Full Article</a>
+                              </div>
+                          </div>
+                      </article>
+                  {% else %}
+                      <a class="media align-items-center" href="{{ url_for('main.article', slug=post.slug) }}">
+                          {% if post.image_filename %}
+                              <img loading="lazy" decoding="async" src="{{ url_for('main.uploaded_file', filename=post.image_filename) }}" alt="Post Thumbnail" class="w-100">
+                          {% else %}
+                              <span class="image-fallback image-fallback-xs">No Image Specified</span>
+                          {% endif %}
+                          <div class="media-body ml-3">
+                              <h3 style="margin-top:-5px">{{ post.title | truncate(30) }}</h3>
+                              <p class="mb-0 small">{{ post.content | truncate(50) | safe }}</p>
+                          </div>
+                      </a>
+                  {% endif %}
+              {% endfor %}
+          </div>
+      </div>
+      </div>
+  </div>
+<div class="col-lg-12 col-md-6">
+  <div class="widget">
+    <h2 class="section-title mb-3">Categories</h2>
+    <div class="widget-body">
+      <ul class="widget-list">
+        {% if categories %}
+            {% for category in categories %}
+                <li>
+                    <!-- <a href="#!">computer<span class="ml-auto">(3)</span></a> -->
+                    <a href="#!">{{category.name}}</a>
+                </li>
+            {% endfor %}
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+
