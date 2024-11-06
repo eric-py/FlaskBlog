@@ -3,6 +3,9 @@ import secrets
 from PIL import Image
 from flask import current_app
 from .config import Config
+from functools import wraps
+from flask_login import current_user
+
 
 def save_picture(form_picture):
     random_hex = secrets.token_hex(8)
@@ -17,3 +20,12 @@ def save_picture(form_picture):
     i.save(picture_path)
 
     return picture_fn
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash('You do not have access to this page.', 'danger')
+            return redirect(url_for('main.home'))
+        return f(*args, **kwargs)
+    return decorated_function
