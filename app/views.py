@@ -5,14 +5,13 @@ from .forms import (LoginForm, RegistrationForm, RequestResetForm,
                     ChangePasswordForm, ResetPasswordForm, UserForm, EditUserForm)
 from .models import User, db, Post, Category
 from flask_mail import Message
-from .utils import save_picture, admin_required
+from .utils import save_picture, admin_required, get_sidebar_data
 from flask import send_from_directory
 from flask import current_app
 import os
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import subqueryload
 from sqlalchemy.exc import IntegrityError
-from random import sample
     
 main = Blueprint('main', __name__)
 
@@ -20,33 +19,14 @@ main = Blueprint('main', __name__)
 def home():
     page = request.args.get('page', 1, type=int)
     posts = Post.query.filter_by(status='p').order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-    categories = Category.query.all()
-    popular = Post.query.filter_by(status='p').order_by(Post.views.desc()).first()
-    all_posts = Post.query.filter_by(status='p').all()
-    random_posts = sample(all_posts, min(5, len(all_posts)))
-    if posts.items:
-        featured_post = posts.items[0]
-        other_posts = posts.items[1:] if len(posts.items) > 1 else []
-
-    return render_template('blog/index.html', 
-                           featured_post=featured_post, 
-                           other_posts=other_posts, 
-                           posts=posts, 
-                           categories=categories,
-                           popular = popular,
-                           random_posts=random_posts)
+    sidebar_data = get_sidebar_data()
+    return render_template('blog/index.html', posts=posts, **sidebar_data)
 
 @main.route('/article/<slug>', methods=['GET', 'POST'])
 def article(slug):
     post = Post.query.filter_by(slug=slug).first_or_404()
-    categories = Category.query.all()
-    popular = Post.query.filter_by(status='p').order_by(Post.views.desc()).first()
-    all_posts = Post.query.filter_by(status='p').all()
-    random_posts = sample(all_posts, min(5, len(all_posts)))
-    return render_template('blog/article.html', post=post,
-                                                categories=categories, 
-                                                popular = popular, 
-                                                random_posts=random_posts)
+    sidebar_data = get_sidebar_data()
+    return render_template('blog/article.html', post=post, **sidebar_data)
 
 @main.route('/uploads/<filename>')
 def uploaded_file(filename):
