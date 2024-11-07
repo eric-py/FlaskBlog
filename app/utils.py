@@ -5,6 +5,8 @@ from flask import current_app
 from .config import Config
 from functools import wraps
 from flask_login import current_user
+from random import sample
+from .models import Category, Post
 
 
 def save_picture(form_picture):
@@ -29,3 +31,10 @@ def admin_required(f):
             return redirect(url_for('main.home'))
         return f(*args, **kwargs)
     return decorated_function
+
+def get_sidebar_data():
+    return {
+        'categories': Category.query.all(),
+        'popular': Post.query.filter_by(status='p').order_by(Post.views.desc()).first(),
+        'random_posts': sample(Post.query.filter_by(status='p').all(), 5)
+    }
