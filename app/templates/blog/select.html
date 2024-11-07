@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %} 
-    {{ category.name }}
+    {{ title }}
 {% endblock %}
 
 {% block content %}
@@ -11,10 +11,19 @@
 			<div class="row">
 				<div class="col-12">
 					<div class="breadcrumbs mb-4"> <a href="{{ url_for('main.home') }}">Home</a>
-						<span class="mx-1">/ Category</span>
-						<span class="mx-1">/</span>  <a href="#!">{{ category.name }}</a>
+					{% if page_type == 'category' %}
+                    <span class="mx-1">/ Category</span>
+                    <span class="mx-1">/</span>  <a href="#!">{{ category.name }}</a>
+                    {% elif page_type == 'author' %}
+                    <span class="mx-1">/ Author</span>
+                    <span class="mx-1">/</span>  <a href="#!">{{ user.username }}</a>
+                    {% endif %}
 					</div>
-					<h1 class="mb-4 border-bottom border-primary d-inline-block text-uppercase">{{ category.name }}</h1>
+					{% if page_type == 'category' %}
+                        <h1 class="mb-5">Showing posts from <span class="text-primary">{{ category.name }}</span></h1>
+                    {% elif page_type == 'author' %}
+                        <h1 class="mb-5">Posts by <span class="text-primary">{{ user.username }}</span></h1>
+                    {% endif %}
 				</div>
 				<div class="col-lg-8 mb-5 mb-lg-0">
 					<div class="row">
@@ -33,12 +42,12 @@
                                     <div class="card-body px-0 pb-0">
                                     <ul class="post-meta mb-2">
                                         {% for category in post.categories %}
-                                            <li> <a href="#!">{{ category.name }}</a></li>
+                                            <li> <a href="{{ url_for('main.category', category_slug=category.slug) }}">{{ category.name }}</a></li>
                                         {% endfor %}
                                     </ul>
                                     <h2><a class="post-title" href="{{ url_for('main.article', slug=post.slug) }}">{{ post.title }}</a></h2>
                                     <p class="card-text">{{ post.content | truncate(150) | safe }}</p>
-                                    <p class="my-2 text-sm">author: <a href="">{{ post.author.username }}</a></p>
+                                    <p class="my-2 text-sm">author: <a href="{{ url_for('main.author_posts', username=post.author.username) }}">{{ post.author.username }}</a></p>
                                     <div class="content"> <a class="read-more-btn" href="{{ url_for('main.article', slug=post.slug) }}">>Read Full Article</a>
                                     </div>
                                     </div>
@@ -46,52 +55,80 @@
                             </div>
                         {% endfor %}
 					</div>
-                    <div class="col-12">
-                <div class="row">
-                    <div class="col-12">
-                    <nav class="mt-4">
-                        <!-- pagination -->
-                        <nav class="mb-md-50">
-                        <ul class="pagination justify-content-center">
-                            {% if posts.has_prev %}
-                                <li class="page-item">
-                                <a class="page-link" href="{{ url_for('main.category', category_slug=category.slug, page=posts.prev_num) }}" aria-label="Previous">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
-                                    </svg>
-                                </a>
-                                </li>
-                                {% endif %}
-                                {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-                                {% if page_num %}
-                                    {% if posts.page == page_num %}
-                                    <li class="page-item active">
-                                        <a class="page-link" href="{{ url_for('main.category', category_slug=category.slug, page=page_num) }}">{{ page_num }}</a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('main.category', category_slug=category.slug, page=page_num) }}">{{ page_num }}</a>
-                                    </li>
-                                    {% endif %}
-                                {% else %}
-                                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                                {% endif %}
-                                {% endfor %}
-                                {% if posts.has_next %}
-                                <li class="page-item">
-                                <a class="page-link" href="{{ url_for('main.category', category_slug=category.slug, page=posts.next_num) }}" aria-label="Next">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
-                                    </svg>
-                                </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                        </nav>
-                    </nav>
-                    </div>
-                </div>
-                </div>
+                    {% if posts.pages > 1 %}
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-12">
+                                    <nav class="mt-4">
+                                        <!-- pagination -->
+                                        <nav class="mb-md-50">
+                                            <ul class="pagination justify-content-center">
+                                                {% if posts.has_prev %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="
+                                                        {% if page_type == 'author' %}
+                                                            {{ url_for('main.author_posts', username=user.username, page=posts.prev_num) }}
+                                                        {% elif page_type == 'category' %}
+                                                            {{ url_for('main.category', category_slug=category.slug, page=posts.prev_num) }}
+                                                        {% endif %}
+                                                        " aria-label="Previous">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
+                                                                <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+                                                            </svg>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                                
+                                                {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                                    {% if page_num %}
+                                                        {% if posts.page == page_num %}
+                                                            <li class="page-item active">
+                                                                <a class="page-link" href="
+                                                                {% if page_type == 'author' %}
+                                                                    {{ url_for('main.author_posts', username=user.username, page=page_num) }}
+                                                                {% elif page_type == 'category' %}
+                                                                    {{ url_for('main.category', category_slug=category.slug, page=page_num) }}
+                                                                {% endif %}
+                                                                ">{{ page_num }}</a>
+                                                            </li>
+                                                        {% else %}
+                                                            <li class="page-item">
+                                                                <a class="page-link" href="
+                                                                {% if page_type == 'author' %}
+                                                                    {{ url_for('main.author_posts', username=user.username, page=page_num) }}
+                                                                {% elif page_type == 'category' %}
+                                                                    {{ url_for('main.category', category_slug=category.slug, page=page_num) }}
+                                                                {% endif %}
+                                                                ">{{ page_num }}</a>
+                                                            </li>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                
+                                                {% if posts.has_next %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="
+                                                        {% if page_type == 'author' %}
+                                                            {{ url_for('main.author_posts', username=user.username, page=posts.next_num) }}
+                                                        {% elif page_type == 'category' %}
+                                                            {{ url_for('main.category', category_slug=category.slug, page=posts.next_num) }}
+                                                        {% endif %}
+                                                        " aria-label="Next">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
+                                                                <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
+                                                            </svg>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
 				</div>
                 <div class="col-lg-4">
                     <div class="widget-blocks">

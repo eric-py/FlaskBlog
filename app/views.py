@@ -36,8 +36,28 @@ def category(category_slug):
         .order_by(Post.date_posted.desc())\
         .paginate(page=page, per_page=10)
     sidebar_data = get_sidebar_data()
-    return render_template('blog/select.html', posts=posts, category=category, **sidebar_data)
+    return render_template('blog/select.html', 
+                           posts=posts, 
+                           category=category, 
+                           title=f"Posts in {category.name}",
+                           page_type='category',
+                           **sidebar_data)
 
+@main.route('/author/<string:username>')
+def author_posts(username):
+    page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = Post.query.filter_by(author=user, status='p')\
+        .order_by(Post.date_posted.desc())\
+        .paginate(page=page, per_page=10)
+    
+    sidebar_data = get_sidebar_data()
+    return render_template('blog/select.html', 
+                           posts=posts, 
+                           user=user, 
+                           title=f"Posts by {username}",
+                           page_type='author',
+                           **sidebar_data)
 @main.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)

@@ -37,7 +37,7 @@
                                 </ul>
                                 <h2 class="h1"><a class="post-title" href="{{ url_for('main.article', slug=post.slug) }}">{{post.title}}</a></h2>
                                 <p class="card-text">{{ post.content | truncate(150) | safe }}</p>
-                                <p class="my-2 text-sm">author: <a href="">{{ post.author.username }}</a></p>
+                                <p class="my-2 text-sm">author: <a href="{{ url_for('main.author_posts', username=post.author.username) }}">{{ post.author.username }}</a></p>
                                 <div class="content"> <a class="read-more-btn" href="{{ url_for('main.article', slug=post.slug) }}">Read Full Article</a>
                                 </div>
                                 </div>
@@ -63,7 +63,7 @@
                                     </ul>
                                     <h2><a class="post-title" href="{{ url_for('main.article', slug=post.slug) }}">{{ post.title }}</a></h2>
                                     <p class="card-text">{{ post.content | truncate(150) | safe }}</p>
-                                    <p class="my-2 text-sm">author: <a href="">{{ post.author.username }}</a></p>
+                                    <p class="my-2 text-sm">author: <a href="{{ url_for('main.author_posts', username=post.author.username) }}">{{ post.author.username }}</a></p>
                                     <div class="content"> <a class="read-more-btn" href="{{ url_for('main.article', slug=post.slug) }}">>Read Full Article</a>
                                     </div>
                                     </div>
