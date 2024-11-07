@@ -35,7 +35,9 @@
                                         <p class="text-xs font-weight-bold mb-0">{{ user.id }}</p>
                                     </td>
                                     <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ user.username }}</p>
+                                        <a href="{{ url_for('profile.author', username=user.username) }}">
+                                            <p class="text-xs font-weight-bold mb-0 text-info">{{ user.username }}</p>
+                                        </a>
                                     </td>
                                     <td class="align-middle text-center text-sm">
                                         <p class="text-xs font-weight-bold mb-0">{{ user.email }}</p>
