@@ -56,7 +56,7 @@
             {% for category in categories %}
                 <li>
                     <!-- <a href="#!">computer<span class="ml-auto">(3)</span></a> -->
-                    <a href="#!">{{category.name}}</a>
+                    <a href="{{url_for('main.category', category_slug=category.slug)}}">{{category.name}}</a>
                 </li>
             {% endfor %}
         {% endif %}

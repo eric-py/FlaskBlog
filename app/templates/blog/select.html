@@ -1,49 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}
-    Articles
+{% block title %} 
+    {{ category.name }}
 {% endblock %}
 
 {% block content %}
-
-    <main>
-    <section class="section">
-        <div class="container">
-        <div class="row no-gutters-lg">
-            <div class="col-12">
-            <h2 class="section-title">Latest Articles</h2>
-            </div>
-            <div class="col-lg-8 mb-5 mb-lg-0">
-            <div class="row">
-                {% if posts %}
-                    {% for post in posts %}
-                        {% if loop.first %}
-                            <div class="col-12 mb-4">
-                            <article class="card article-card">
-                                <a href="{{ url_for('main.article', slug=post.slug) }}">
-                                <div class="card-image">
-                                    <div class="post-info"> 
-                                        <span class="text-uppercase">{{ post.date_posted.strftime('%d %b %Y') }}</span>
-                                        <span>{{ post.views }} views</span>
-                                    </div>
-                                    <img loading="lazy" decoding="async" src="{{ url_for('main.uploaded_file', filename=post.image_filename) }}" alt="Post Thumbnail" class="w-100">
-                                </div>
-                                </a>
-                                <div class="card-body px-0 pb-1">
-                                <ul class="post-meta mb-2">
-                                    {% for category in post.categories %}
-                                        <li> <a href="{{url_for('main.category', category_slug=category.slug)}}">{{ category.name }}</a></li>
-                                    {% endfor %}
-                                </ul>
-                                <h2 class="h1"><a class="post-title" href="{{ url_for('main.article', slug=post.slug) }}">{{post.title}}</a></h2>
-                                <p class="card-text">{{ post.content | truncate(150) | safe }}</p>
-                                <p class="my-2 text-sm">author: <a href="">{{ post.author.username }}</a></p>
-                                <div class="content"> <a class="read-more-btn" href="{{ url_for('main.article', slug=post.slug) }}">Read Full Article</a>
-                                </div>
-                                </div>
-                            </article>
-                            </div>
-                        {% else %}
+<main>
+	<section class="section">
+		<div class="container">
+			<div class="row">
+				<div class="col-12">
+					<div class="breadcrumbs mb-4"> <a href="{{ url_for('main.home') }}">Home</a>
+						<span class="mx-1">/ Category</span>
+						<span class="mx-1">/</span>  <a href="#!">{{ category.name }}</a>
+					</div>
+					<h1 class="mb-4 border-bottom border-primary d-inline-block text-uppercase">{{ category.name }}</h1>
+				</div>
+				<div class="col-lg-8 mb-5 mb-lg-0">
+					<div class="row">
+                        {% for post in posts %}
                             <div class="col-md-6 mb-4">
                                 <article class="card article-card article-card-sm h-100">
                                     <a href="{{ url_for('main.article', slug=post.slug) }}">
@@ -58,7 +33,7 @@
                                     <div class="card-body px-0 pb-0">
                                     <ul class="post-meta mb-2">
                                         {% for category in post.categories %}
-                                            <li> <a href="{{url_for('main.category', category_slug=category.slug)}}">{{ category.name }}</a></li>
+                                            <li> <a href="#!">{{ category.name }}</a></li>
                                         {% endfor %}
                                     </ul>
                                     <h2><a class="post-title" href="{{ url_for('main.article', slug=post.slug) }}">{{ post.title }}</a></h2>
@@ -69,10 +44,9 @@
                                     </div>
                                 </article>
                             </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-                <div class="col-12">
+                        {% endfor %}
+					</div>
+                    <div class="col-12">
                 <div class="row">
                     <div class="col-12">
                     <nav class="mt-4">
@@ -81,7 +55,7 @@
                         <ul class="pagination justify-content-center">
                             {% if posts.has_prev %}
                                 <li class="page-item">
-                                <a class="page-link" href="{{ url_for('main.home', page=posts.prev_num) }}" aria-label="Previous">
+                                <a class="page-link" href="{{ url_for('main.category', category_slug=category.slug, page=posts.prev_num) }}" aria-label="Previous">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
                                     </svg>
@@ -92,11 +66,11 @@
                                 {% if page_num %}
                                     {% if posts.page == page_num %}
                                     <li class="page-item active">
-                                        <a class="page-link" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+                                        <a class="page-link" href="{{ url_for('main.category', category_slug=category.slug, page=page_num) }}">{{ page_num }}</a>
                                     </li>
                                     {% else %}
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+                                        <a class="page-link" href="{{ url_for('main.category', category_slug=category.slug, page=page_num) }}">{{ page_num }}</a>
                                     </li>
                                     {% endif %}
                                 {% else %}
@@ -105,7 +79,7 @@
                                 {% endfor %}
                                 {% if posts.has_next %}
                                 <li class="page-item">
-                                <a class="page-link" href="{{ url_for('main.home', page=posts.next_num) }}" aria-label="Next">
+                                <a class="page-link" href="{{ url_for('main.category', category_slug=category.slug, page=posts.next_num) }}" aria-label="Next">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
                                     </svg>
@@ -118,19 +92,18 @@
                     </div>
                 </div>
                 </div>
-            </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="widget-blocks">
-                    <div class="row">
-                    {% set sidebar_data = {'categories': categories, 'popular': popular, 'random_posts':random_posts} %}
-                    {% include 'includes/sidebar.html' %}
+				</div>
+                <div class="col-lg-4">
+                    <div class="widget-blocks">
+                        <div class="row">
+                            {% set sidebar_data = {'categories': categories, 'popular': popular, 'random_posts':random_posts} %}
+                            {% include 'includes/sidebar.html' %}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        </div>
-    </section>
-    </main>
-
+                
+			</div>
+		</div>
+	</section>
+</main>
 {% endblock %}

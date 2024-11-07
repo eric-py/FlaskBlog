@@ -28,6 +28,16 @@ def article(slug):
     sidebar_data = get_sidebar_data()
     return render_template('blog/article.html', post=post, **sidebar_data)
 
+@main.route("/category/<string:category_slug>")
+def category(category_slug):
+    page = request.args.get('page', 1, type=int)
+    category = Category.query.filter_by(slug=category_slug).first_or_404()
+    posts = Post.query.filter(Post.categories.contains(category), Post.status == 'p')\
+        .order_by(Post.date_posted.desc())\
+        .paginate(page=page, per_page=10)
+    sidebar_data = get_sidebar_data()
+    return render_template('blog/select.html', posts=posts, category=category, **sidebar_data)
+
 @main.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
