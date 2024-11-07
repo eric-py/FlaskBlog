@@ -67,6 +67,12 @@
                   <span class="nav-link-text ms-1">Users</span>
             </a>
           {% endif %}
+          {% if current_user.is_admin %}
+            <a class="nav-link  " href="{{url_for('profile.review')}}">
+                  <i class="fa-solid fa-newspaper"></i>
+                  <span class="nav-link-text ms-1">Review Articles</span>
+            </a>
+          {% endif %}
         </li>
       </ul>
     </div>
