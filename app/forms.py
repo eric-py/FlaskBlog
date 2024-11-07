@@ -50,13 +50,18 @@ class PostForm(FlaskForm):
     content = CKEditorField('Content', validators=[DataRequired()])
     categories = SelectMultipleField('Categories', coerce=int)
     image = FileField('Image', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
-    status = SelectField('Status', choices=[('d', 'Draft'), ('p', 'Published')], validators=[DataRequired()])
-    submit = SubmitField('Post')
+    status = SelectField('Status', validators=[DataRequired()])
+    submit = SubmitField('Done')
 
     def __init__(self, *args, **kwargs):
         super(PostForm, self).__init__(*args, **kwargs)
         self.categories.choices = [(c.id, c.name) for c in Category.query.order_by('name')]
 
+        if current_user.is_admin:
+            self.status.choices = choices=[('d', 'Draft'), ('p', 'Published'), ('r', 'Reject'), ('i', 'Review')]
+        else:
+            self.status.choices = choices=[('d', 'Draft'), ('i', 'Review')]
+            
 class CategoryForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(min=2, max=50)])
     submit = SubmitField('Create Category')
