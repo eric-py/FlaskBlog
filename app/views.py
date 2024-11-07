@@ -25,6 +25,9 @@ def home():
 @main.route('/article/<slug>', methods=['GET', 'POST'])
 def article(slug):
     post = Post.query.filter_by(slug=slug).first_or_404()
+    if post.status != 'p':
+        if not current_user.is_authenticated or (not current_user.is_admin and current_user != post.author):
+            abort(403)
     sidebar_data = get_sidebar_data()
     return render_template('blog/article.html', post=post, **sidebar_data)
 
@@ -151,8 +154,9 @@ profile = Blueprint('profile', __name__)
 @profile.route('')
 @login_required
 def profile_index():
+    title = 'Articles'
     posts = Post.query.filter_by(author=current_user).all()
-    return render_template('profile/index.html', posts=posts)
+    return render_template('profile/index.html', posts=posts, title=title)
 
 @profile.route('/new', methods=['GET', 'POST'])
 @login_required
@@ -160,9 +164,12 @@ def new_article():
     form = PostForm()
     
     if form.validate_on_submit():
+        if not current_user.is_admin and not form.status.data == 'd' or not form.status.data == 'i':
+            status = 'd'
+        status = form.status.data
         post = Post(title=form.title.data,
                     content=form.content.data,
-                    status=form.status.data,
+                    status=status,
                     author=current_user)
         
         selected_categories = Category.query.filter(Category.id.in_(form.categories.data)).all()
@@ -183,7 +190,7 @@ def new_article():
 @login_required
 def edit_article(post_id):
     post = Post.query.get_or_404(post_id)
-    if post.author != current_user:
+    if not (current_user.is_admin or post.author == current_user and post.status in ['r', 'd']):
         abort(403)
     form = PostForm()
     
@@ -218,7 +225,7 @@ def edit_article(post_id):
 @login_required
 def delete_article(post_id):
     post = Post.query.get_or_404(post_id)
-    if post.author != current_user:
+    if not (current_user.is_admin or post.author == current_user):
         flash('You do not have permission to delete this post.', 'danger')
         return redirect(url_for('main.home'))
     
@@ -381,3 +388,20 @@ def delete_user(user_id):
         flash('There was an error deleting the user.', 'danger')
     
     return redirect(url_for('profile.user_list'))
+
+@profile.route('/review')
+@login_required
+@admin_required
+def review():
+    title = 'Review Articles'
+    posts = Post.query.filter_by(status='i').all()
+    return render_template('profile/index.html', posts=posts, title=title)
+
+@profile.route('/author/<string:username>')
+@login_required
+@admin_required
+def author(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    title = 'Articles by %s' % username
+    posts = Post.query.filter_by(author=user).all()
+    return render_template('profile/index.html', posts=posts, title=title)

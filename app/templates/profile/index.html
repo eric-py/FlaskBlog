@@ -6,7 +6,7 @@
         <div class="col-12">
           <div class="card mb-4">
             <div class="card-header pb-0">
-              <h6>Articles</h6>
+              <h6>{{ title }}</h6>
             </div>
             {% if posts %}
                 <div class="card-body px-0 pt-0 pb-2">
@@ -15,7 +15,9 @@
                     <thead>
                         <tr>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
-                        <!-- <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Content</th> -->
+                        {% if current_user.is_admin %}
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Author</th>
+                        {% endif %}
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">category</th>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">created_at</th>
@@ -35,16 +37,25 @@
                                     {% endif %}
                                 </div>
                                 <div class="my-auto">
-                                    <h6 class="mb-0 text-sm">{{post.title}}</h6>
+                                    <h6 class="mb-0 text-sm"><a class="text-info" href="{{ url_for('main.article', slug=post.slug) }}" target="_blank">{{post.title | truncate(30)}}</a></h6>
                                 </div>
                             </div>
                         </td>
                         <td>
+                            <span class="text-xs font-weight-bold">
+                                <a href="{{ url_for('profile.author', username=post.author.username) }}" class="text-info">{{ post.author.username }}</a>
+                            </span>
+                        </td>
+                        <td> 
                             <p class="text-sm font-weight-bold">
-                                {% if post.status == 'd' %}
-                                    Draft
-                                {% elif post.status == 'p' %}
-                                    Published
+                                {% if post.status == 'p'  %}
+                                    <span class="text-success">Published</span>
+                                {% elif post.status == 'd' %}
+                                    <span class="text-warning">Draft</span>
+                                {% elif post.status == 'r' %}
+                                    <span class="text-danger">Reject</span>
+                                {% elif post.status == 'i' %}
+                                    <span class="text-info">Review</span>
                                 {% endif %}
                             </p>
                             </p>
@@ -61,9 +72,13 @@
                         </td>
                         <td class="text-center">
                             <a href="#">
-                                <a class="text-xs font-weight-bold btn btn-outline-dark btn-sm" href="{{ url_for('profile.edit_article', post_id=post.id) }}">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </a>
+                                {% if post.status == 'd' or post.status == 'r' or current_user.is_admin %}
+                                    <a class="text-xs font-weight-bold btn btn-outline-dark btn-sm" href="{{ url_for('profile.edit_article', post_id=post.id) }}">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('profile.delete_article', post_id=post.id) }}" class="btn btn-outline-danger btn-sm px-4" onclick="return confirm('Are you sure you want to delete this article?');">Delete</a>
+                                {% endif %}
                             </a>
                         </td>
                         </tr>
