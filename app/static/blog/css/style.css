@@ -948,4 +948,21 @@ footer .section {
   font-size: xx-large;
   margin-bottom: 0rem !important;
 }
-/*# sourceMappingURL=style.css.map */
+
+.post-meta {
+                  font-size: 0.9rem;
+                  color: #6c757d;
+                }
+
+                .post-meta ul {
+                  padding: 0;
+                  margin: 0;
+                }
+
+                .post-meta .list-inline-item:not(:last-child) {
+                  margin-right: 1rem;
+                }
+
+                .post-meta i {
+                  color: #007bff;
+                }
