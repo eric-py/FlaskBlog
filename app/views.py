@@ -1,13 +1,15 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request, abort
+from flask import (Blueprint, render_template, flash,
+                   redirect, url_for, request,
+                   abort, send_from_directory, current_app,
+                   render_template_string)
 from flask_login import login_user, current_user, logout_user, login_required
 from .forms import (LoginForm, RegistrationForm, RequestResetForm, 
                     ResetPasswordForm, PostForm, CategoryForm, UpdateAccountForm, 
-                    ChangePasswordForm, ResetPasswordForm, UserForm, EditUserForm)
-from .models import User, db, Post, Category
+                    ChangePasswordForm, ResetPasswordForm, UserForm, EditUserForm,
+                    ContactForm, ContactReplyForm)
+from .models import User, db, Post, Category, Contact
 from flask_mail import Message
 from .utils import save_picture, admin_required, get_sidebar_data
-from flask import send_from_directory
-from flask import current_app
 import os
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import subqueryload
@@ -82,6 +84,22 @@ def search():
                            page_type='search',
                            search_query=search_query,
                            **sidebar_data)
+
+@main.route('/contact', methods=['GET', 'POST'])
+def contact():
+    form = ContactForm()
+    if form.validate_on_submit():
+        contact = Contact(
+            name=form.name.data,
+            email=form.email.data,
+            subject=form.subject.data,
+            message=form.message.data
+        )
+        db.session.add(contact)
+        db.session.commit()
+        flash('Your message has been sent successfully. Thank you!', 'success')
+        return redirect(url_for('main.home'))
+    return render_template('blog/contact.html', form=form)
 
 @main.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -427,3 +445,63 @@ def author(username):
     title = 'Articles by %s' % username
     posts = Post.query.filter_by(author=user).all()
     return render_template('profile/index.html', posts=posts, title=title)
+
+@profile.route('/contact', methods=['GET'])
+@login_required
+@admin_required
+def contact():
+    title = 'Contact'
+    status = request.args.get('s', 'a')
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    if status == 'y':
+        contacts = Contact.query.filter_by(status='y').paginate(page=page, per_page=per_page)
+        title = 'Answered Contacts'
+    elif status == 'n':
+        contacts = Contact.query.filter_by(status='n').paginate(page=page, per_page=per_page)
+        title = 'Unanswered Contacts'
+    else:
+        contacts = Contact.query.paginate(page=page, per_page=per_page)
+        title = 'All Contacts'
+
+    return render_template('profile/contact.html', title=title, contacts=contacts, current_status=status)
+
+@profile.route('/contact/<int:contact_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def view_contact(contact_id):
+    contact = Contact.query.get_or_404(contact_id)
+    form = ContactReplyForm()
+    if form.validate_on_submit():
+        try:
+            from . import mail
+            html_content = render_template_string(
+                "<html><body>{{ message|safe }}</body></html>",
+                message=form.message.data
+            )
+            msg = Message(
+                subject=f"Re: {contact.subject}",
+                sender='sample@demo.com',
+                recipients=[contact.email],
+                body=form.message.data,
+                html=html_content
+            )
+            mail.send(msg)
+            contact.status = 'y'
+            contact.answer = form.message.data
+            db.session.commit()
+            flash('Reply sent successfully!', 'success')
+            return redirect(url_for('profile.contact'))
+        except Exception as e:
+            flash('There was an issue sending the email. Please try again later.', 'danger')
+    return render_template('profile/view_contact.html', title='View Contact', contact=contact, form=form)
+
+@profile.route("/contact/delete/<int:contact_id>", methods=['GET', 'POST'])
+@login_required
+@admin_required
+def delete_contact(contact_id):
+    contact = Contact.query.get_or_404(contact_id)
+    db.session.delete(contact)
+    db.session.commit()
+    flash('Contact message has been deleted.', 'success')
+    return redirect(url_for('profile.contact'))

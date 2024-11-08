@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Contact
+{% endblock %}
+{% block content %}
+    <main>
+        <section class="section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="breadcrumbs mb-4"> <a href="index.html">Home</a>
+                            <span class="mx-1">/</span>  <a href="#!">Contact</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="pr-0 pr-lg-4">
+                            <div class="content">
+                                Contact us. We look forward to hearing from you!
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mt-4 mt-lg-0">
+                        <form method="POST" action="{{ url_for('main.contact') }}" class="row">
+                            {{ form.hidden_tag() }}
+                            <div class="col-md-6">
+                                {{ form.name(class="form-control mb-4", placeholder="Name") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.email(class="form-control mb-4", placeholder="Email") }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.subject(class="form-control mb-4", placeholder="Subject") }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.message(class="form-control mb-4", placeholder="Type You Message Here", rows="5") }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.submit(class="btn btn-outline-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}

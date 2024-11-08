@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, SelectMultipleField, PasswordField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, SelectMultipleField, PasswordField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Optional
 from flask_wtf.file import FileAllowed, FileField
 from .models import User, Category
@@ -109,3 +109,14 @@ class EditUserForm(FlaskForm):
     password = PasswordField('Password', validators=[Optional(), Length(min=6)])
     confirm_password = PasswordField('Confirm Password', validators=[EqualTo('password')])
     submit = SubmitField('Update')
+
+class ContactForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    subject = StringField('Subject', validators=[DataRequired()])
+    message = TextAreaField('Type You Message Here', validators=[DataRequired()])
+    submit = SubmitField('Send Message')
+
+class ContactReplyForm(FlaskForm):
+    message = CKEditorField('message', validators=[DataRequired(), Length(min=10, max=1000)])
+    submit = SubmitField('Send Reply')
