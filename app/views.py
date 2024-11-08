@@ -61,6 +61,28 @@ def author_posts(username):
                            title=f"Posts by {username}",
                            page_type='author',
                            **sidebar_data)
+
+@main.route('/search', methods=['GET'])
+def search():
+    page = request.args.get('page', 1, type=int)
+    search_query = request.args.get('s')
+
+    if search_query:
+        posts = Post.query.filter(
+            (Post.title.icontains(search_query) | Post.content.icontains(search_query)) &
+            (Post.status == 'p')
+        ).order_by(Post.date_posted.desc()).paginate(page=page, per_page=10)
+    else:
+        posts = Post.query.filter_by(status='p').order_by(Post.date_posted.desc()).paginate(page=page, per_page=10)
+    
+    sidebar_data = get_sidebar_data()
+    return render_template('blog/select.html', 
+                           posts=posts, 
+                           title=f"Search Results for {search_query}",
+                           page_type='search',
+                           search_query=search_query,
+                           **sidebar_data)
+
 @main.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)

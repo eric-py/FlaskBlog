@@ -9,7 +9,7 @@
           data-target="#navigation"> <span class="navbar-toggler-icon"></span>
         </button>
       </div>
-      <form action="#!" class="search order-lg-3 order-md-2 order-3 ml-auto">
+      <form action="{{ url_for('main.search') }}" class="search order-lg-3 order-md-2 order-3 ml-auto" method="get">
         <input id="search-query" name="s" type="search" placeholder="Search..." autocomplete="off">
       </form>
       <div class="collapse navbar-collapse text-center order-lg-2 order-4" id="navigation">
