@@ -49,13 +49,13 @@
                         <td> 
                             <p class="text-sm font-weight-bold">
                                 {% if post.status == 'p'  %}
-                                    <span class="text-success">Published</span>
+                                    <span class="badge badge-sm bg-gradient-success">Published</span>
                                 {% elif post.status == 'd' %}
-                                    <span class="text-warning">Draft</span>
+                                    <span class="badge badge-sm bg-gradient-warning">Draft</span>
                                 {% elif post.status == 'r' %}
-                                    <span class="text-danger">Reject</span>
+                                    <span class="badge badge-sm bg-gradient-danger">Reject</span>
                                 {% elif post.status == 'i' %}
-                                    <span class="text-info">Review</span>
+                                    <span class="badge badge-sm bg-gradient-info">Review</span>
                                 {% endif %}
                             </p>
                             </p>
