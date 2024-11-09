@@ -232,7 +232,7 @@ def edit_article(post_id):
     post = Post.query.get_or_404(post_id)
     if not (current_user.is_admin or post.author == current_user and post.status in ['r', 'd']):
         abort(403)
-    form = PostForm()
+    form = PostForm(is_edit=True)
     
     if form.validate_on_submit():
         post.title = form.title.data

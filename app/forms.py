@@ -48,12 +48,12 @@ class ResetPasswordForm(FlaskForm):
 class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     content = CKEditorField('Content', validators=[DataRequired()])
-    categories = SelectMultipleField('Categories', coerce=int)
-    image = FileField('Image', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
+    categories = SelectMultipleField('Categories', coerce=int, validators=[DataRequired()])
+    image = FileField('Image')
     status = SelectField('Status', validators=[DataRequired()])
     submit = SubmitField('Done')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, is_edit=False, **kwargs):
         super(PostForm, self).__init__(*args, **kwargs)
         self.categories.choices = [(c.id, c.name) for c in Category.query.order_by('name')]
 
@@ -61,6 +61,11 @@ class PostForm(FlaskForm):
             self.status.choices = choices=[('d', 'Draft'), ('p', 'Published'), ('r', 'Reject'), ('i', 'Review')]
         else:
             self.status.choices = choices=[('d', 'Draft'), ('i', 'Review')]
+        
+        if is_edit:
+            self.image.validators = [FileAllowed(['jpg', 'png', 'jpeg'])]
+        else:
+            self.image.validators = [DataRequired(), FileAllowed(['jpg', 'png', 'jpeg'])]
             
 class CategoryForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(min=2, max=50)])
