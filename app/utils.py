@@ -32,9 +32,13 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+from random import sample
+
 def get_sidebar_data():
+    published_posts = Post.query.filter_by(status='p').all()
+    sample_size = min(5, len(published_posts))
     return {
         'categories': Category.query.all(),
         'popular': Post.query.filter_by(status='p').order_by(Post.views.desc()).first(),
-        'random_posts': sample(Post.query.filter_by(status='p').all(), 5)
+        'random_posts': sample(published_posts, sample_size) if sample_size > 0 else []
     }
